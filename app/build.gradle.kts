@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
 }
-
+//尝试注释代码
 android {
     useLibrary("org.apache.http.legacy")
     namespace = "net.micode.notes"
