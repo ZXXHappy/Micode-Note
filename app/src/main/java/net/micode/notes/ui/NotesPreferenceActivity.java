@@ -47,58 +47,43 @@ import net.micode.notes.data.Notes;
 import net.micode.notes.data.Notes.NoteColumns;
 import net.micode.notes.gtask.remote.GTaskSyncService;
 
-// 设置页面，负责账号绑定、同步、偏好设置
+
 public class NotesPreferenceActivity extends PreferenceActivity {
-    // 配置文件名称
     public static final String PREFERENCE_NAME = "notes_preferences";
 
-    // 同步账号名称配置项key
     public static final String PREFERENCE_SYNC_ACCOUNT_NAME = "pref_key_account_name";
 
-    // 最后同步时间配置项key
     public static final String PREFERENCE_LAST_SYNC_TIME = "pref_last_sync_time";
 
-    // 背景颜色设置key
     public static final String PREFERENCE_SET_BG_COLOR_KEY = "pref_key_bg_random_appear";
 
-    // 同步账号分类配置key
     private static final String PREFERENCE_SYNC_ACCOUNT_KEY = "pref_sync_account_key";
 
-    // 账号过滤key
     private static final String AUTHORITIES_FILTER_KEY = "authorities";
 
-    // 账号分类容器
     private PreferenceCategory mAccountCategory;
 
-    // 同步状态广播接收器
     private GTaskReceiver mReceiver;
 
-    // 原始账号列表
     private Account[] mOriAccounts;
 
-    // 是否新增了账号标记
     private boolean mHasAddedAccount;
 
     @Override
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
-        // 显示返回箭头
+        /* using the app icon for navigation */
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // 加载偏好设置布局
         addPreferencesFromResource(R.xml.preferences);
-        // 获取账号分类
         mAccountCategory = (PreferenceCategory) findPreference(PREFERENCE_SYNC_ACCOUNT_KEY);
-        // 创建广播接收器
         mReceiver = new GTaskReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(GTaskSyncService.GTASK_SERVICE_BROADCAST_NAME);
-        // 注册广播
         registerReceiver(mReceiver, filter);
 
         mOriAccounts = null;
-        // 加载头部布局
         View header = LayoutInflater.from(this).inflate(R.layout.settings_header, null);
         getListView().addHeaderView(header, null, true);
     }
@@ -107,7 +92,8 @@ public class NotesPreferenceActivity extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
 
-        // 如果新增了账号，自动检测并设置
+        // need to set sync account automatically if user has added a new
+        // account
         if (mHasAddedAccount) {
             Account[] accounts = getGoogleAccounts();
             if (mOriAccounts != null && accounts.length > mOriAccounts.length) {
@@ -120,7 +106,6 @@ public class NotesPreferenceActivity extends PreferenceActivity {
                         }
                     }
                     if (!found) {
-                        // 设置新账号
                         setSyncAccount(accountNew.name);
                         break;
                     }
@@ -128,20 +113,17 @@ public class NotesPreferenceActivity extends PreferenceActivity {
             }
         }
 
-        // 刷新界面
         refreshUI();
     }
 
     @Override
     protected void onDestroy() {
         if (mReceiver != null) {
-            // 注销广播
             unregisterReceiver(mReceiver);
         }
         super.onDestroy();
     }
 
-    // 加载账号偏好设置
     private void loadAccountPreference() {
         mAccountCategory.removeAll();
 
@@ -153,14 +135,14 @@ public class NotesPreferenceActivity extends PreferenceActivity {
             public boolean onPreferenceClick(Preference preference) {
                 if (!GTaskSyncService.isSyncing()) {
                     if (TextUtils.isEmpty(defaultAccount)) {
-                        // 首次设置账号，显示选择账号对话框
+                        // the first time to set account
                         showSelectAccountAlertDialog();
                     } else {
-                        // 已有账号，显示修改确认对话框
+                        // if the account has already been set, we need to promp
+                        // user about the risk
                         showChangeAccountConfirmAlertDialog();
                     }
                 } else {
-                    // 同步中，不允许修改账号
                     Toast.makeText(NotesPreferenceActivity.this,
                             R.string.preferences_toast_cannot_change_account, Toast.LENGTH_SHORT)
                             .show();
@@ -172,17 +154,15 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         mAccountCategory.addPreference(accountPref);
     }
 
-    // 加载同步按钮
     private void loadSyncButton() {
         Button syncButton = (Button) findViewById(R.id.preference_sync_button);
         TextView lastSyncTimeView = (TextView) findViewById(R.id.prefenerece_sync_status_textview);
 
-        // 设置按钮状态
+        // set button state
         if (GTaskSyncService.isSyncing()) {
             syncButton.setText(getString(R.string.preferences_button_sync_cancel));
             syncButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    // 取消同步
                     GTaskSyncService.cancelSync(NotesPreferenceActivity.this);
                 }
             });
@@ -190,15 +170,13 @@ public class NotesPreferenceActivity extends PreferenceActivity {
             syncButton.setText(getString(R.string.preferences_button_sync_immediately));
             syncButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    // 开始同步
                     GTaskSyncService.startSync(NotesPreferenceActivity.this);
                 }
             });
         }
-        // 有账号时按钮才可用
         syncButton.setEnabled(!TextUtils.isEmpty(getSyncAccountName(this)));
 
-        // 显示最后同步时间
+        // set last sync time
         if (GTaskSyncService.isSyncing()) {
             lastSyncTimeView.setText(GTaskSyncService.getProgressString());
             lastSyncTimeView.setVisibility(View.VISIBLE);
@@ -215,13 +193,11 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         }
     }
 
-    // 刷新整个界面
     private void refreshUI() {
         loadAccountPreference();
         loadSyncButton();
     }
 
-    // 显示选择账号对话框
     private void showSelectAccountAlertDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 
@@ -234,7 +210,6 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         dialogBuilder.setCustomTitle(titleView);
         dialogBuilder.setPositiveButton(null, null);
 
-        // 获取所有Google账号
         Account[] accounts = getGoogleAccounts();
         String defAccount = getSyncAccountName(this);
 
@@ -255,7 +230,6 @@ public class NotesPreferenceActivity extends PreferenceActivity {
             dialogBuilder.setSingleChoiceItems(items, checkedItem,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            // 设置选中的账号
                             setSyncAccount(itemMapping[which].toString());
                             dialog.dismiss();
                             refreshUI();
@@ -263,7 +237,6 @@ public class NotesPreferenceActivity extends PreferenceActivity {
                     });
         }
 
-        // 添加新账号入口
         View addAccountView = LayoutInflater.from(this).inflate(R.layout.add_account_text, null);
         dialogBuilder.setView(addAccountView);
 
@@ -271,7 +244,6 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         addAccountView.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mHasAddedAccount = true;
-                // 跳转到系统添加账号页面
                 Intent intent = new Intent("android.settings.ADD_ACCOUNT_SETTINGS");
                 intent.putExtra(AUTHORITIES_FILTER_KEY, new String[] {
                     "gmail-ls"
@@ -282,7 +254,6 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         });
     }
 
-    // 显示修改/删除账号确认对话框
     private void showChangeAccountConfirmAlertDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 
@@ -294,7 +265,6 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         subtitleTextView.setText(getString(R.string.preferences_dialog_change_account_warn_msg));
         dialogBuilder.setCustomTitle(titleView);
 
-        // 选项：修改、删除、取消
         CharSequence[] menuItemArray = new CharSequence[] {
                 getString(R.string.preferences_menu_change_account),
                 getString(R.string.preferences_menu_remove_account),
@@ -303,10 +273,8 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         dialogBuilder.setItems(menuItemArray, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0) {
-                    // 切换账号
                     showSelectAccountAlertDialog();
                 } else if (which == 1) {
-                    // 删除账号
                     removeSyncAccount();
                     refreshUI();
                 }
@@ -315,13 +283,11 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         dialogBuilder.show();
     }
 
-    // 获取设备上所有Google账号
     private Account[] getGoogleAccounts() {
         AccountManager accountManager = AccountManager.get(this);
         return accountManager.getAccountsByType("com.google");
     }
 
-    // 设置同步账号
     private void setSyncAccount(String account) {
         if (!getSyncAccountName(this).equals(account)) {
             SharedPreferences settings = getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
@@ -333,10 +299,10 @@ public class NotesPreferenceActivity extends PreferenceActivity {
             }
             editor.commit();
 
-            // 清空最后同步时间
+            // clean up last sync time
             setLastSyncTime(this, 0);
 
-            // 子线程清空笔记的同步信息
+            // clean up local gtask related info
             new Thread(new Runnable() {
                 public void run() {
                     ContentValues values = new ContentValues();
@@ -346,14 +312,12 @@ public class NotesPreferenceActivity extends PreferenceActivity {
                 }
             }).start();
 
-            // 提示设置成功
             Toast.makeText(NotesPreferenceActivity.this,
                     getString(R.string.preferences_toast_success_set_accout, account),
                     Toast.LENGTH_SHORT).show();
         }
     }
 
-    // 移除同步账号
     private void removeSyncAccount() {
         SharedPreferences settings = getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
@@ -365,7 +329,7 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         }
         editor.commit();
 
-        // 清空笔记同步信息
+        // clean up local gtask related info
         new Thread(new Runnable() {
             public void run() {
                 ContentValues values = new ContentValues();
@@ -376,14 +340,12 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         }).start();
     }
 
-    // 获取当前同步账号
     public static String getSyncAccountName(Context context) {
         SharedPreferences settings = context.getSharedPreferences(PREFERENCE_NAME,
                 Context.MODE_PRIVATE);
         return settings.getString(PREFERENCE_SYNC_ACCOUNT_NAME, "");
     }
 
-    // 设置最后同步时间
     public static void setLastSyncTime(Context context, long time) {
         SharedPreferences settings = context.getSharedPreferences(PREFERENCE_NAME,
                 Context.MODE_PRIVATE);
@@ -392,14 +354,12 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         editor.commit();
     }
 
-    // 获取最后同步时间
     public static long getLastSyncTime(Context context) {
         SharedPreferences settings = context.getSharedPreferences(PREFERENCE_NAME,
                 Context.MODE_PRIVATE);
         return settings.getLong(PREFERENCE_LAST_SYNC_TIME, 0);
     }
 
-    // 同步状态广播接收器
     private class GTaskReceiver extends BroadcastReceiver {
 
         @Override
@@ -414,11 +374,9 @@ public class NotesPreferenceActivity extends PreferenceActivity {
         }
     }
 
-    // 菜单选项（返回按钮）
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // 返回笔记列表
                 Intent intent = new Intent(this, NotesListActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
