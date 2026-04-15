@@ -56,6 +56,8 @@ public class WorkingNote {
 
     private Context mContext;
 
+    private int mCategoryId;
+
     private static final String TAG = "WorkingNote";
 
     private boolean mIsDeleted;
@@ -78,7 +80,8 @@ public class WorkingNote {
             NoteColumns.BG_COLOR_ID,
             NoteColumns.WIDGET_ID,
             NoteColumns.WIDGET_TYPE,
-            NoteColumns.MODIFIED_DATE
+            NoteColumns.MODIFIED_DATE,
+            NoteColumns.COLUMN_CATEGORY_ID //
     };
 
     private static final int DATA_ID_COLUMN = 0;
@@ -137,6 +140,12 @@ public class WorkingNote {
                 mWidgetType = cursor.getInt(NOTE_WIDGET_TYPE_COLUMN);
                 mAlertDate = cursor.getLong(NOTE_ALERTED_DATE_COLUMN);
                 mModifiedDate = cursor.getLong(NOTE_MODIFIED_DATE_COLUMN);
+
+                // === 新增：把你存进数据库的分类读出来 ===
+                int categoryIndex = cursor.getColumnIndex(NoteColumns.COLUMN_CATEGORY_ID);
+                if (categoryIndex >= 0) {
+                    mCategoryId = cursor.getInt(categoryIndex);
+                }
             }
             cursor.close();
         } else {
@@ -364,5 +373,16 @@ public class WorkingNote {
          * @param newMode is new mode
          */
         void onCheckListModeChanged(int oldMode, int newMode);
+    }
+
+    public int getCategoryId() {
+        return mCategoryId;
+    }
+    public void setCategoryId(int id) {
+        if (id != mCategoryId) { // 增加一个判断，只有改变时才处理
+            mCategoryId = id;
+            // 把分类 ID 放入待保存的队列中
+            mNote.setNoteValue(NoteColumns.COLUMN_CATEGORY_ID, String.valueOf(mCategoryId));
+        }
     }
 }

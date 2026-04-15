@@ -40,6 +40,7 @@ public class NoteItemData {
         NoteColumns.TYPE,
         NoteColumns.WIDGET_ID,
         NoteColumns.WIDGET_TYPE,
+            NoteColumns.COLUMN_CATEGORY_ID
     };
 
     private static final int ID_COLUMN                    = 0;
@@ -55,6 +56,7 @@ public class NoteItemData {
     private static final int WIDGET_ID_COLUMN             = 10;
     private static final int WIDGET_TYPE_COLUMN           = 11;
 
+    private int mCategoryId; // 用来存放从数据库查出来的分类 ID
     private long mId;
     private long mAlertDate;
     private int mBgColorId;
@@ -92,6 +94,16 @@ public class NoteItemData {
         mWidgetId = cursor.getInt(WIDGET_ID_COLUMN);
         mWidgetType = cursor.getInt(WIDGET_TYPE_COLUMN);
 
+        // 1. 先获取索引位置
+        int index = cursor.getColumnIndex(NoteColumns.COLUMN_CATEGORY_ID);
+
+// 2. 判断索引是否合法（大于等于 0 说明找到了这一列）
+        if (index >= 0) {
+            this.mCategoryId = cursor.getInt(index);
+        } else {
+            // 3. 如果没找到，给个默认值（比如 0，代表无分类），防止程序崩溃
+            this.mCategoryId = 0;
+        }
         mPhoneNumber = "";
         if (mParentId == Notes.ID_CALL_RECORD_FOLDER) {
             mPhoneNumber = DataUtils.getCallNumberByNoteId(context.getContentResolver(), mId);
@@ -220,5 +232,8 @@ public class NoteItemData {
 
     public static int getNoteType(Cursor cursor) {
         return cursor.getInt(TYPE_COLUMN);
+    }
+    public int getCategoryId() {
+        return mCategoryId;
     }
 }
