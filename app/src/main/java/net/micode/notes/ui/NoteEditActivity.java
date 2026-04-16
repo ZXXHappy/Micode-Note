@@ -16,6 +16,10 @@
 
 package net.micode.notes.ui;
 
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
+import net.micode.notes.data.Notes.NoteColumns;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -83,6 +87,9 @@ public class NoteEditActivity extends Activity implements OnClickListener,
 
         public ImageView ibSetBgColor;
     }
+
+    private Spinner mCategorySpinner;
+    private int mCurrentCategoryId = NoteColumns.CATEGORY_NONE;
 
     private static final Map<Integer, Integer> sBgSelectorBtnsMap = new HashMap<Integer, Integer>();
     static {
@@ -277,6 +284,23 @@ public class NoteEditActivity extends Activity implements OnClickListener,
             mNoteEditor.setText(getHighlightQueryResult(mWorkingNote.getContent(), mUserQuery));
             mNoteEditor.setSelection(mNoteEditor.getText().length());
         }
+        // --- 新增：初始化分类下拉框 ---
+        mCategorySpinner = (Spinner) findViewById(R.id.note_category_spinner);
+        String[] categories = new String[]{"默认", "工作", "生活", "学习"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mCategorySpinner.setAdapter(adapter);
+        // 让下拉框自动读取并跳转到之前保存的分类
+        mCategorySpinner.setSelection(mWorkingNote.getCategoryId());
+
+        mCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mCurrentCategoryId = position;
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
         for (Integer id : sBgSelectorSelectionMap.keySet()) {
             findViewById(sBgSelectorSelectionMap.get(id)).setVisibility(View.GONE);
         }
@@ -358,8 +382,8 @@ public class NoteEditActivity extends Activity implements OnClickListener,
                 || ev.getX() > (x + view.getWidth())
                 || ev.getY() < y
                 || ev.getY() > (y + view.getHeight())) {
-                    return false;
-                }
+            return false;
+        }
         return true;
     }
 
@@ -418,7 +442,7 @@ public class NoteEditActivity extends Activity implements OnClickListener,
         }
 
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[] {
-            mWorkingNote.getWidgetId()
+                mWorkingNote.getWidgetId()
         });
 
         sendBroadcast(intent);
@@ -430,7 +454,7 @@ public class NoteEditActivity extends Activity implements OnClickListener,
         if (id == R.id.btn_set_bg_color) {
             mNoteBgColorSelector.setVisibility(View.VISIBLE);
             findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
-                    -                    View.VISIBLE);
+                                        View.VISIBLE);
         } else if (sBgSelectorBtnsMap.containsKey(id)) {
             findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
                     View.GONE);
@@ -797,6 +821,9 @@ public class NoteEditActivity extends Activity implements OnClickListener,
 
     private boolean saveNote() {
         getWorkingText();
+        // --- 新增：在保存前将分类ID传给 WorkingNote ---
+        mWorkingNote.setCategoryId(mCurrentCategoryId);
+
         boolean saved = mWorkingNote.saveNote();
         if (saved) {
             /**

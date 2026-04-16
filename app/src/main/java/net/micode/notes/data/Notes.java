@@ -165,6 +165,16 @@ public class Notes {
          * <P> Type : INTEGER (long) </P>
          */
         public static final String VERSION = "version";
+
+        public static final String COLUMN_CATEGORY_ID = "category_id"; // 新增：分类ID
+
+        /**
+         * 定义具体的分类常量值
+         */
+        public static final int CATEGORY_NONE = 0;      // 未分类
+        public static final int CATEGORY_WORK = 1;      // 工作
+        public static final int CATEGORY_LIFE = 2;      // 生活
+        public static final int CATEGORY_STUDY = 3;     // 学习
     }
 
     public interface DataColumns {
@@ -206,35 +216,35 @@ public class Notes {
 
 
         /**
-         * Generic data column, the meaning is {@link #MIMETYPE} specific, used for
+         * Generic data column, the meaning is {@link #MIME_TYPE} specific, used for
          * integer data type
          * <P> Type: INTEGER </P>
          */
         public static final String DATA1 = "data1";
 
         /**
-         * Generic data column, the meaning is {@link #MIMETYPE} specific, used for
+         * Generic data column, the meaning is {@link #MIME_TYPE} specific, used for
          * integer data type
          * <P> Type: INTEGER </P>
          */
         public static final String DATA2 = "data2";
 
         /**
-         * Generic data column, the meaning is {@link #MIMETYPE} specific, used for
+         * Generic data column, the meaning is {@link #MIME_TYPE} specific, used for
          * TEXT data type
          * <P> Type: TEXT </P>
          */
         public static final String DATA3 = "data3";
 
         /**
-         * Generic data column, the meaning is {@link #MIMETYPE} specific, used for
+         * Generic data column, the meaning is {@link #MIME_TYPE} specific, used for
          * TEXT data type
          * <P> Type: TEXT </P>
          */
         public static final String DATA4 = "data4";
 
         /**
-         * Generic data column, the meaning is {@link #MIMETYPE} specific, used for
+         * Generic data column, the meaning is {@link #MIME_TYPE} specific, used for
          * TEXT data type
          * <P> Type: TEXT </P>
          */

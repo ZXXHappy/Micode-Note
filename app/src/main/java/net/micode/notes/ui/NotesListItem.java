@@ -35,6 +35,7 @@ public class NotesListItem extends LinearLayout {
     private TextView mTitle;
     private TextView mTime;
     private TextView mCallName;
+    private TextView mCategoryLabel;
     private NoteItemData mItemData;
     private CheckBox mCheckBox;
 
@@ -46,6 +47,8 @@ public class NotesListItem extends LinearLayout {
         mTime = (TextView) findViewById(R.id.tv_time);
         mCallName = (TextView) findViewById(R.id.tv_name);
         mCheckBox = (CheckBox) findViewById(android.R.id.checkbox);
+        // --- 新增：绑定在 xml 里创建的标签 ID ---
+        mCategoryLabel = (TextView) findViewById(R.id.tv_category_label);
     }
 
     public void bind(Context context, NoteItemData data, boolean choiceMode, boolean checked) {
@@ -92,6 +95,32 @@ public class NotesListItem extends LinearLayout {
                 } else {
                     mAlert.setVisibility(View.GONE);
                 }
+            }
+            // --- 新增：处理分类标签的显示和颜色 ---
+            // 注意：这里假设你已经在 NoteItemData 里增加了 getCategoryId 方法
+            int categoryId = data.getCategoryId();
+
+            if (categoryId > 0 && data.getType() == Notes.TYPE_NOTE) {
+                mCategoryLabel.setVisibility(View.VISIBLE);
+                switch (categoryId) {
+                    case 1: // 工作
+                        mCategoryLabel.setText("工作");
+                        mCategoryLabel.setBackgroundColor(0xFF1E88E5); // 蓝色
+                        break;
+                    case 2: // 生活
+                        mCategoryLabel.setText("生活");
+                        mCategoryLabel.setBackgroundColor(0xFF43A047); // 绿色
+                        break;
+                    case 3: // 学习
+                        mCategoryLabel.setText("学习");
+                        mCategoryLabel.setBackgroundColor(0xFFF4511E); // 橙色
+                        break;
+                    default:
+                        mCategoryLabel.setVisibility(View.GONE);
+                        break;
+                }
+            } else {
+                mCategoryLabel.setVisibility(View.GONE);
             }
         }
         mTime.setText(DateUtils.getRelativeTimeSpanString(data.getModifiedDate()));

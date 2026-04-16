@@ -54,6 +54,17 @@
                     android:singleLine="true" />
 
                 <TextView
+                    android:id="@+id/tv_category_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dip"
+                    android:paddingLeft="4dip"
+                    android:paddingRight="4dip"
+                    android:textSize="10sp"
+                    android:textColor="#FFFFFF"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/tv_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

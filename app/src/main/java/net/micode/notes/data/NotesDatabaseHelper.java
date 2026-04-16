@@ -30,7 +30,7 @@ import net.micode.notes.data.Notes.NoteColumns;
 public class NotesDatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "note.db";
 
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
 
     public interface TABLE {
         public static final String NOTE = "note";
@@ -43,25 +43,26 @@ public class NotesDatabaseHelper extends SQLiteOpenHelper {
     private static NotesDatabaseHelper mInstance;
 
     private static final String CREATE_NOTE_TABLE_SQL =
-        "CREATE TABLE " + TABLE.NOTE + "(" +
-            NoteColumns.ID + " INTEGER PRIMARY KEY," +
-            NoteColumns.PARENT_ID + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.ALERTED_DATE + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.BG_COLOR_ID + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.CREATED_DATE + " INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)," +
-            NoteColumns.HAS_ATTACHMENT + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.MODIFIED_DATE + " INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)," +
-            NoteColumns.NOTES_COUNT + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.SNIPPET + " TEXT NOT NULL DEFAULT ''," +
-            NoteColumns.TYPE + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.WIDGET_ID + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.WIDGET_TYPE + " INTEGER NOT NULL DEFAULT -1," +
-            NoteColumns.SYNC_ID + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.LOCAL_MODIFIED + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.ORIGIN_PARENT_ID + " INTEGER NOT NULL DEFAULT 0," +
-            NoteColumns.GTASK_ID + " TEXT NOT NULL DEFAULT ''," +
-            NoteColumns.VERSION + " INTEGER NOT NULL DEFAULT 0" +
-        ")";
+            "CREATE TABLE " + TABLE.NOTE + "(" +
+                    NoteColumns.ID + " INTEGER PRIMARY KEY," +
+                    NoteColumns.PARENT_ID + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.ALERTED_DATE + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.BG_COLOR_ID + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.CREATED_DATE + " INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)," +
+                    NoteColumns.HAS_ATTACHMENT + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.MODIFIED_DATE + " INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)," +
+                    NoteColumns.NOTES_COUNT + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.SNIPPET + " TEXT NOT NULL DEFAULT ''," +
+                    NoteColumns.TYPE + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.WIDGET_ID + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.WIDGET_TYPE + " INTEGER NOT NULL DEFAULT -1," +
+                    NoteColumns.SYNC_ID + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.LOCAL_MODIFIED + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.ORIGIN_PARENT_ID + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.GTASK_ID + " TEXT NOT NULL DEFAULT ''," +
+                    NoteColumns.VERSION + " INTEGER NOT NULL DEFAULT 0," +
+                    NoteColumns.COLUMN_CATEGORY_ID + " INTEGER NOT NULL DEFAULT 0" +//新增
+                    ");";
 
     private static final String CREATE_DATA_TABLE_SQL =
         "CREATE TABLE " + TABLE.DATA + "(" +
@@ -322,6 +323,12 @@ public class NotesDatabaseHelper extends SQLiteOpenHelper {
             oldVersion++;
         }
 
+        // --- 新增下面这段逻辑 ---
+        if (oldVersion == 4) {
+            upgradeToV5(db);
+            oldVersion++;
+        }
+
         if (reCreateTriggers) {
             reCreateNoteTableTriggers(db);
             reCreateDataTableTriggers(db);
@@ -359,4 +366,12 @@ public class NotesDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("ALTER TABLE " + TABLE.NOTE + " ADD COLUMN " + NoteColumns.VERSION
                 + " INTEGER NOT NULL DEFAULT 0");
     }
+
+    private void upgradeToV5(SQLiteDatabase db) {
+        // 给 note 表增加分类 ID 列
+        db.execSQL("ALTER TABLE " + TABLE.NOTE + " ADD COLUMN " + NoteColumns.COLUMN_CATEGORY_ID
+                + " INTEGER NOT NULL DEFAULT 0");
+    }
+
 }
+
