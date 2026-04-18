@@ -30,6 +30,7 @@ public class Notes {
      * {@link Notes#ID_TEMPARAY_FOLDER } is for notes belonging no folder
      * {@link Notes#ID_CALL_RECORD_FOLDER} is to store call records
      */
+    //推入远程仓库
     public static final int ID_ROOT_FOLDER = 0;
     public static final int ID_TEMPARAY_FOLDER = -1;
     public static final int ID_CALL_RECORD_FOLDER = -2;
