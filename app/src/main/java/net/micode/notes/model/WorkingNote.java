@@ -67,12 +67,10 @@ public class WorkingNote {
      */
     private NoteSettingChangedListener mNoteSettingStatusListener;
 
-    // -------------------------------------------------------------------------
     // 【投影列定义】
     // 查询数据库时只取需要的列（而非 SELECT *），减少 IO 与内存开销。
     // 列索引常量（DATA_ID_COLUMN 等）与此数组下标严格对应，
     // 后续通过 cursor.getXxx(常量) 取值，避免硬编码数字导致的维护风险。
-    // -------------------------------------------------------------------------
     public static final String[] DATA_PROJECTION = new String[]{
             DataColumns.ID,        // 0: data 行 id
             DataColumns.CONTENT,   // 1: 正文内容
